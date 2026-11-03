@@ -1,20 +1,24 @@
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
+import { readFileSync } from 'node:fs';
 
 dotenv.config();
 
+const sslCaPath = process.env.DB_SSL_CA_PATH;
+
 export const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
+    host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT) || 4000,
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
-    database: process.env.DB_NAME || 'test',
+    database: process.env.DB_NAME,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
+    enableKeepAlive: true,
     ssl: {
-    minVersion: 'TLSv1.2',
-    rejectUnauthorized: true
+      minVersion: 'TLSv1.2',
+      ...(sslCaPath ? { ca: readFileSync(sslCaPath) } : {})
     }
 });
 
